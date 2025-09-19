@@ -37,6 +37,7 @@ Flags:
     -r, -raw       Don't use graphical variants or add combining characters.
     -p, -pager     Output to $PAGER.
     -o, -or        Use "or" when searching instead of "and".
+    -l, -limit     Limit number of results (search command only).
 
 Commands:
     list           List Unicode data such as blocks, categories, etc.
@@ -79,6 +80,9 @@ Flags:
 
     -o, -or        Use "or" when searching: match if at least one parameter
                    matches, instead of only when all parameters match.
+
+    -l, -limit     Limit number of results (search command only); default is
+                   unlimited.
 
     -q, -quiet     Backwards-compatible alias for -c/-compact.
     -j, -json      Backwards-compatible alias for -as json
@@ -294,6 +298,7 @@ func main() {
 		rawF     = flag.Bool(false, "r", "raw")
 		pager    = flag.Bool(false, "p", "pager")
 		or       = flag.Bool(false, "o", "or")
+		limitF   = flag.Int(0, "l", "limit")
 		formatF  = flag.String(defaultFormat, "format", "f")
 		tone     = flag.String("", "t", "tone", "tones")
 		gender   = flag.String("person", "g", "gender", "genders")
@@ -378,7 +383,7 @@ func main() {
 	case "identify":
 		err = identify(args, format, raw, as)
 	case "search":
-		err = search(args, format, raw, as, or.Bool())
+		err = search(args, format, raw, as, or.Bool(), limitF.Int())
 	case "print":
 		err = print(args, format, raw, as)
 	case "emoji":
@@ -738,7 +743,7 @@ func identify(ins []string, format string, raw bool, as printAs) error {
 	return nil
 }
 
-func search(args []string, format string, raw bool, as printAs, or bool) error {
+func search(args []string, format string, raw bool, as printAs, or bool, limit int) error {
 	args = slices.DeleteFunc(args, func(s string) bool { return s == "" })
 	if len(args) == 0 {
 		return errors.New("search: need search term")
@@ -748,12 +753,18 @@ func search(args []string, format string, raw bool, as printAs, or bool) error {
 	}
 
 	found := false
+	foundCount := 0
 	f, err := NewFormat(format, as, knownColumns...)
 	if err != nil {
 		return err
 	}
 
 	for _, info := range unidata.Codepoints {
+		// If limit is set and we've reached it, break
+		if limit > 0 && foundCount >= limit {
+			break
+		}
+
 		hasAlias := func(upperS string) bool {
 			for _, a := range info.Aliases() {
 				if strings.Contains(strings.ToUpper(a), upperS) {
@@ -768,6 +779,7 @@ func search(args []string, format string, raw bool, as printAs, or bool) error {
 			if strings.Contains(info.Name(), a) || hasAlias(a) {
 				if or {
 					found = true
+					foundCount++
 					f.Line(info.Codepoint, f.toLine(info, raw))
 					break
 				}
@@ -776,6 +788,7 @@ func search(args []string, format string, raw bool, as printAs, or bool) error {
 		}
 		if !or && m == len(args) {
 			found = true
+			foundCount++
 			f.Line(info.Codepoint, f.toLine(info, raw))
 		}
 	}
