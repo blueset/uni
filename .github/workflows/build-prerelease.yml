@@ -1,0 +1,124 @@
+name: 'Build and Publish Pre-release'
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches:
+      - fork
+
+jobs:
+  build:
+    name: 'Build and Release'
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: write
+    steps:
+      - name: 'Checkout code'
+        uses: 'actions/checkout@v4'
+        with:
+          fetch-depth: 0  # Get full history for commit info
+
+      - name: 'Set up Go'
+        uses: 'actions/setup-go@v5'
+        with:
+          go-version: '1.21'
+
+      - name: 'Get commit hash'
+        id: commit
+        run: echo "short_sha=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+
+      - name: 'Get version info'
+        id: version
+        run: |
+          tag=$(git tag | tail -n1)
+          commit_info=$(git log -n1 --format=' %h %cd' --date='format:%Y-%m-%d')
+          echo "version_flags=-ldflags=\"-w -s -X \\\"main.version=$tag$commit_info\\\"\"" >> $GITHUB_OUTPUT
+
+      - name: 'Build for Darwin AMD64'
+        env:
+          GOOS: darwin
+          GOARCH: amd64
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-darwin-amd64
+          gzip uni-${{ steps.commit.outputs.short_sha }}-darwin-amd64
+
+      - name: 'Build for Darwin ARM64'
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-darwin-arm64
+          gzip uni-${{ steps.commit.outputs.short_sha }}-darwin-arm64
+
+      - name: 'Build for Linux AMD64'
+        env:
+          GOOS: linux
+          GOARCH: amd64
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-linux-amd64
+          gzip uni-${{ steps.commit.outputs.short_sha }}-linux-amd64
+
+      - name: 'Build for Linux ARM'
+        env:
+          GOOS: linux
+          GOARCH: arm
+          GOARM: 7
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-linux-arm
+          gzip uni-${{ steps.commit.outputs.short_sha }}-linux-arm
+
+      - name: 'Build for Linux ARM64'
+        env:
+          GOOS: linux
+          GOARCH: arm64
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-linux-arm64
+          gzip uni-${{ steps.commit.outputs.short_sha }}-linux-arm64
+
+      - name: 'Build for Windows AMD64'
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-windows-amd64.exe
+          gzip uni-${{ steps.commit.outputs.short_sha }}-windows-amd64.exe
+
+      - name: 'Build for Windows ARM64'
+        env:
+          GOOS: windows
+          GOARCH: arm64
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-windows-arm64.exe
+          gzip uni-${{ steps.commit.outputs.short_sha }}-windows-arm64.exe
+
+      - name: 'Build for WASM'
+        env:
+          GOOS: js
+          GOARCH: wasm
+        run: |
+          go build ${{ steps.version.outputs.version_flags }} -o uni-${{ steps.commit.outputs.short_sha }}-wasm.wasm
+          gzip uni-${{ steps.commit.outputs.short_sha }}-wasm.wasm
+
+      - name: 'Create Pre-release'
+        uses: 'softprops/action-gh-release@v2'
+        with:
+          tag_name: 'pre-${{ steps.commit.outputs.short_sha }}'
+          name: 'Pre-release ${{ steps.commit.outputs.short_sha }}'
+          prerelease: true
+          body: |
+            Pre-release build from commit ${{ steps.commit.outputs.short_sha }}
+            
+            **Commit:** ${{ github.sha }}
+            **Branch:** ${{ github.ref_name }}
+            **Trigger:** ${{ github.event_name }}
+          files: |
+            uni-${{ steps.commit.outputs.short_sha }}-darwin-amd64.gz
+            uni-${{ steps.commit.outputs.short_sha }}-darwin-arm64.gz
+            uni-${{ steps.commit.outputs.short_sha }}-linux-amd64.gz
+            uni-${{ steps.commit.outputs.short_sha }}-linux-arm.gz
+            uni-${{ steps.commit.outputs.short_sha }}-linux-arm64.gz
+            uni-${{ steps.commit.outputs.short_sha }}-windows-amd64.exe.gz
+            uni-${{ steps.commit.outputs.short_sha }}-windows-arm64.exe.gz
+            uni-${{ steps.commit.outputs.short_sha }}-wasm.wasm.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
