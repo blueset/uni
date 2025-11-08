@@ -19,11 +19,13 @@ jobs:
           - os: windows-latest
             arch: x64
             platform: win32
-          - os: windows-11-arm
-            arch: arm64
-            platform: win32
+          # - os: windows-latest
+          #   arch: arm64
+          #   platform: win32
+          # dropping arm64 Windows due to gcc instructions mismatch
+          # https://github.com/blueset/uni/actions/runs/19197326206/job/54880198159
           # macOS
-          - os: macOS-15-intel  # Intel
+          - os: macOS-15  # Intel
             arch: x64
             platform: darwin
           - os: macos-latest  # Apple Silicon
@@ -33,7 +35,7 @@ jobs:
           - os: ubuntu-latest
             arch: x64
             platform: linux
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-latest
             arch: arm64
             platform: linux
     
@@ -59,13 +61,6 @@ jobs:
       - name: Install gloabl npm dependencies
         if: matrix.platform == 'win32'
         run: npm install --global node-gyp 
-
-      - name: Set Go environment for cross-compilation
-        if: matrix.platform == 'win32' && matrix.arch == 'arm64'
-        run: |
-          echo "GOARCH=arm64" >> $GITHUB_ENV
-          echo "CGO_ENABLED=1" >> $GITHUB_ENV
-        shell: bash
 
       - name: Generate gonacli files
         run: gonacli generate
