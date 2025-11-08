@@ -17,7 +17,7 @@ jobs:
             platform: win32
 
           # macOS
-          - os: macOS-15  # Intel
+          - os: macos-15-intel  # Intel
             arch: x64
             platform: darwin
           - os: macos-latest  # Apple Silicon
