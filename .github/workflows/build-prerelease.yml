@@ -54,7 +54,6 @@ jobs:
         run: go install github.com/wenlng/gonacli@latest
       
       - name: Install global npm dependencies
-        if: matrix.platform == 'win32' || (matrix.platform == 'darwin' && matrix.arch == 'arm64')
         run: npm install --global node-gyp 
 
       - name: Generate gonacli files
