@@ -23,7 +23,7 @@ jobs:
             arch: arm64
             platform: win32
           # macOS
-          - os: macos-13  # Intel
+          - os: macOS-15  # Intel
             arch: x64
             platform: darwin
           - os: macos-latest  # Apple Silicon
@@ -56,6 +56,10 @@ jobs:
       - name: Install gonacli
         run: go install github.com/wenlng/gonacli@latest
       
+      - name: Install gloabl npm dependencies
+        if: matrix.platform == 'win32'
+        run: npm install --global node-gyp 
+
       - name: Generate gonacli files
         run: gonacli generate
       
