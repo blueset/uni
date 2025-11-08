@@ -3,6 +3,11 @@
   "version": "0.0.1-dev.COMMIT_HASH",
   "description": "Node.js binding for `uni` CLI utilities",
   "main": "index.js",
+  "repository": {
+    "url": "https://github.com/blueset/uni",
+    "directory": "uniaddon_data",
+    "type": "git"
+  },
   "scripts": {
     "install": "node-gyp-build",
     "build": "node-gyp configure && node-gyp build",
