@@ -1,0 +1,22 @@
+{
+  "name": "uni",
+  "sources": [
+    "uni.go",
+    "format.go"
+  ],
+  "output": "./uniaddon/",
+  "exports": [
+    {
+      "name": "jsexec",
+      "args": [
+        {
+          "name": "argsJson",
+          "type": "string"
+        }
+      ],
+      "returntype": "string",
+      "jscallname": "exec",
+      "jscallmode": "sync"
+    }
+  ]
+}
