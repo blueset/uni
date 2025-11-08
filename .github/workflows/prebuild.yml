@@ -100,6 +100,10 @@ jobs:
       - name: Run prebuildify
         working-directory: ./uniaddon
         run: npm run prebuildify -- --arch ${{ matrix.arch }}
+
+      - name: Bundle DLLs (Windows only)
+        if: matrix.platform == 'win32'
+        run: mv ./uniaddon/*.dll uniaddon/prebuilds/win32-${{ matrix.arch }}/
       
       - name: Upload prebuilds
         uses: actions/upload-artifact@v4
