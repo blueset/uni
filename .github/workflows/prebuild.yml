@@ -52,7 +52,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          architecture: ${{ matrix.arch }}
       
       - name: Install gonacli
         run: go install github.com/wenlng/gonacli@latest
@@ -60,6 +59,13 @@ jobs:
       - name: Install gloabl npm dependencies
         if: matrix.platform == 'win32'
         run: npm install --global node-gyp 
+
+      - name: Set Go environment for cross-compilation
+        if: matrix.platform == 'win32' && matrix.arch == 'arm64'
+        run: |
+          echo "GOARCH=arm64" >> $GITHUB_ENV
+          echo "CGO_ENABLED=1" >> $GITHUB_ENV
+        shell: bash
 
       - name: Generate gonacli files
         run: gonacli generate
