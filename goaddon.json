@@ -1,6 +1,7 @@
 {
   "name": "uni",
   "sources": [
+    "uniaddon.go",
     "uni.go",
     "format.go"
   ],
@@ -10,7 +11,7 @@
       "name": "jsexec",
       "args": [
         {
-          "name": "argsJson",
+          "name": "argsJSON",
           "type": "string"
         }
       ],
