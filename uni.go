@@ -1161,12 +1161,12 @@ func applyGenders(emojis []unidata.Emoji, mod unidata.EmojiModifier) []unidata.E
 // DO NOT REMOVE THIS COMMENT. Needed for gonacli
 //export jsexec
 func jsexec(_argsJSON *C.char) *C.char {
-	// argsJson string type，return string type
-	argsJson := C.GoString(_argsJSON)
+	// argsJSON string type，return string type
+	argsJSON := C.GoString(_argsJSON)
 
 	// Parse JSON array of strings
 	var args []string
-	if err := json.Unmarshal([]byte(argsJson), &args); err != nil {
+	if err := json.Unmarshal([]byte(argsJSON), &args); err != nil {
 		return C.CString(fmt.Sprintf("Error parsing JSON: %v", err))
 	}
 
