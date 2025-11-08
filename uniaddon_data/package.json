@@ -1,0 +1,25 @@
+{
+  "name": "@eana/uni",
+  "version": "0.0.1-dev.COMMIT_HASH",
+  "description": "Node.js binding for `uni` CLI utilities",
+  "main": "index.js",
+  "scripts": {
+    "install": "node-gyp-build",
+    "build": "node-gyp configure && node-gyp build",
+    "build:debug": "node-gyp configure && node-gyp build --debug",
+    "build:release": "node-gyp configure && node-gyp build",
+    "prebuildify": "prebuildify --napi --strip"
+  },
+  "author": "eana",
+  "license": "MIT",
+  "gypfile": true,
+  "gyp": true,
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^8.5.0",
+    "node-gyp-build": "^4.8.4"
+  },
+  "devDependencies": {
+    "prebuildify": "^6.0.1"
+  }
+}
